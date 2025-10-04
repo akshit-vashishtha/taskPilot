@@ -1,27 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Search, Plus, Filter, Calendar, Clock, Flag, User, MoreHorizontal } from "lucide-react";
-
-const initialTasks = [
-  { id: 1, title: "Design UI Components", status: "toDo", deadline: "2025-09-20", priority: "high", assignee: "John Doe", description: "Create reusable UI components for the dashboard", tags: ["design", "frontend"] },
-  { id: 2, title: "Build REST API", status: "inProgress", deadline: "2025-09-18", priority: "high", assignee: "Jane Smith", description: "Develop backend API endpoints", tags: ["backend", "api"] },
-  { id: 3, title: "Write Documentation", status: "done", deadline: "2025-09-10", priority: "medium", assignee: "Mike Johnson", description: "Complete technical documentation", tags: ["docs"] },
-  { id: 4, title: "Code Review", status: "inProgress", deadline: "2025-09-17", priority: "medium", assignee: "Sarah Wilson", description: "Review pull requests", tags: ["review"] },
-];
-
-const columns = [
-  { key: "toDo", label: "To Do", color: "bg-slate-50 border-slate-200", limit: 5 },
-  { key: "inProgress", label: "In Progress", color: "bg-blue-50 border-blue-200", limit: 3 },
-  { key: "review", label: "Review", color: "bg-amber-50 border-amber-200", limit: 4 },
-  { key: "done", label: "Done", color: "bg-emerald-50 border-emerald-200", limit: null },
-  { key: "backlog", label: "Backlog", color: "bg-red-50 border-red-200", limit: null },
-];
-
-const priorities = {
-  low: { color: "text-green-600 bg-green-100", icon: "↓" },
-  medium: { color: "text-yellow-600 bg-yellow-100", icon: "→" },
-  high: { color: "text-red-600 bg-red-100", icon: "↑" },
-  urgent: { color: "text-purple-600 bg-purple-100", icon: "!!" },
-};
+import { sampleTasks, getNextTaskId, addTimestamps } from "../data/sampleTasks";
+import { columns, priorities, priorityOptions } from "../data/taskConfig";
 
 function TaskCard({ task, moveTask, deleteTask, editTask, onDragStart, onDragEnd }) {
   const [showDetails, setShowDetails] = useState(false);
@@ -187,7 +167,7 @@ function Column({ column, tasks, moveTask, deleteTask, editTask, onDrop, onDragO
 }
 
 export default function Kanban({name}) {
-  const [tasks, setTasks] = useState(initialTasks);
+  const [tasks, setTasks] = useState(sampleTasks);
   const [draggedTask, setDraggedTask] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterPriority, setFilterPriority] = useState("");
@@ -202,7 +182,7 @@ export default function Kanban({name}) {
     tags: "",
   });
 
-  const nextId = useRef(Math.max(...tasks.map(t => t.id)) + 1);
+  const nextId = useRef(getNextTaskId());
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -242,7 +222,7 @@ export default function Kanban({name}) {
   const addTask = () => {
     if (!newTask.title || !newTask.deadline) return;
     
-    const task = {
+    const task = addTimestamps({
       id: nextId.current++,
       title: newTask.title,
       description: newTask.description,
@@ -251,7 +231,8 @@ export default function Kanban({name}) {
       priority: newTask.priority,
       assignee: newTask.assignee,
       tags: newTask.tags ? newTask.tags.split(",").map(tag => tag.trim()) : [],
-    };
+      position: tasks.filter(t => t.status === "toDo").length,
+    });
     
     setTasks([...tasks, task]);
     setNewTask({
@@ -381,10 +362,11 @@ export default function Kanban({name}) {
                 onChange={(e) => setNewTask({ ...newTask, priority: e.target.value })}
                 className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                <option value="low">Low Priority</option>
-                <option value="medium">Medium Priority</option>
-                <option value="high">High Priority</option>
-                <option value="urgent">Urgent Priority</option>
+                {priorityOptions.map(option => (
+                  <option key={option.key} value={option.key}>
+                    {option.label}
+                  </option>
+                ))}
               </select>
               <input
                 type="text"
