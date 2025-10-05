@@ -1,39 +1,35 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Search, Plus, Filter, Calendar, Clock, Flag, User, MoreHorizontal } from "lucide-react";
-
-const initialTasks = [
-  { id: 1, title: "Design UI Components", status: "toDo", deadline: "2025-09-20", priority: "high", assignee: "John Doe", description: "Create reusable UI components for the dashboard", tags: ["design", "frontend"] },
-  { id: 2, title: "Build REST API", status: "inProgress", deadline: "2025-09-18", priority: "high", assignee: "Jane Smith", description: "Develop backend API endpoints", tags: ["backend", "api"] },
-  { id: 3, title: "Write Documentation", status: "done", deadline: "2025-09-10", priority: "medium", assignee: "Mike Johnson", description: "Complete technical documentation", tags: ["docs"] },
-  { id: 4, title: "Code Review", status: "inProgress", deadline: "2025-09-17", priority: "medium", assignee: "Sarah Wilson", description: "Review pull requests", tags: ["review"] },
-];
-
-const columns = [
-  { key: "toDo", label: "To Do", color: "bg-slate-50 border-slate-200", limit: 5 },
-  { key: "inProgress", label: "In Progress", color: "bg-blue-50 border-blue-200", limit: 3 },
-  { key: "review", label: "Review", color: "bg-amber-50 border-amber-200", limit: 4 },
-  { key: "done", label: "Done", color: "bg-emerald-50 border-emerald-200", limit: null },
-  { key: "backlog", label: "Backlog", color: "bg-red-50 border-red-200", limit: null },
-];
-
-const priorities = {
-  low: { color: "text-green-600 bg-green-100", icon: "↓" },
-  medium: { color: "text-yellow-600 bg-yellow-100", icon: "→" },
-  high: { color: "text-red-600 bg-red-100", icon: "↑" },
-  urgent: { color: "text-purple-600 bg-purple-100", icon: "!!" },
-};
+import { Search, Plus, Filter, Calendar, Clock, Flag, User, MoreHorizontal, X, Save } from "lucide-react";
+import { sampleTasks, getNextTaskId, addTimestamps } from "../data/sampleTasks";
+import { columns, priorities, priorityOptions, statusOptions } from "../data/taskConfig";
 
 function TaskCard({ task, moveTask, deleteTask, editTask, onDragStart, onDragEnd }) {
   const [showDetails, setShowDetails] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  const [editData, setEditData] = useState({ ...task });
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editData, setEditData] = useState({ 
+    ...task,
+    tags: task.tags ? task.tags.join(", ") : ""
+  });
   
   const isOverdue = new Date(task.deadline) < new Date() && task.status !== "done";
   const daysUntilDeadline = Math.ceil((new Date(task.deadline) - new Date()) / (1000 * 60 * 60 * 24));
   
-  const handleEdit = () => {
-    editTask(task.id, editData);
-    setIsEditing(false);
+  const handleSaveEdit = () => {
+    const updatedTask = {
+      ...editData,
+      tags: editData.tags ? editData.tags.split(",").map(tag => tag.trim()).filter(tag => tag) : [],
+      updatedAt: new Date().toISOString()
+    };
+    editTask(task.id, updatedTask);
+    setShowEditModal(false);
+  };
+
+  const handleCancelEdit = () => {
+    setEditData({ 
+      ...task,
+      tags: task.tags ? task.tags.join(", ") : ""
+    });
+    setShowEditModal(false);
   };
 
   const handleDragStart = (e) => {
@@ -54,35 +50,31 @@ function TaskCard({ task, moveTask, deleteTask, editTask, onDragStart, onDragEnd
       <div className="p-4">
         <div className="flex justify-between items-start mb-2">
           <div className="flex-1">
-            {isEditing ? (
-              <input
-                type="text"
-                value={editData.title}
-                onChange={(e) => setEditData({ ...editData, title: e.target.value })}
-                className="w-full font-medium text-gray-800 border rounded px-2 py-1"
-                onBlur={handleEdit}
-                onKeyPress={(e) => e.key === "Enter" && handleEdit()}
-                autoFocus
-              />
-            ) : (
-              <h3 
-                className="font-medium text-gray-800 cursor-pointer hover:text-blue-600"
-                onClick={() => setShowDetails(!showDetails)}
-              >
-                {task.title}
-              </h3>
-            )}
+            <h3 
+              className="font-medium text-gray-800 cursor-pointer hover:text-blue-600"
+              onClick={() => setShowDetails(!showDetails)}
+            >
+              {task.title}
+            </h3>
           </div>
           <div className="flex items-center gap-1 ml-2">
             <button
-              onClick={() => setIsEditing(!isEditing)}
-              className="text-gray-400 hover:text-gray-600 p-1"
+              onClick={() => setShowEditModal(true)}
+              className="text-gray-400 hover:text-blue-600 p-1 rounded hover:bg-gray-100 transition-colors"
+              title="Edit task"
+              draggable={false}
+              onDragStart={(e) => e.stopPropagation()}
+              onMouseDown={(e) => e.stopPropagation()}
             >
               <MoreHorizontal size={14} />
             </button>
             <button
               onClick={() => deleteTask(task.id)}
-              className="text-gray-400 hover:text-red-500 p-1"
+              className="text-gray-400 hover:text-red-500 p-1 rounded hover:bg-red-50 transition-colors"
+              title="Delete task"
+              draggable={false}
+              onDragStart={(e) => e.stopPropagation()}
+              onMouseDown={(e) => e.stopPropagation()}
             >
               ✕
             </button>
@@ -138,6 +130,152 @@ function TaskCard({ task, moveTask, deleteTask, editTask, onDragStart, onDragEnd
             </div>
           </div>
         )}
+
+        {/* Edit Modal */}
+        {showEditModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={handleCancelEdit}>
+            <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-800">Edit Task</h3>
+                <button
+                  onClick={handleCancelEdit}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                {/* Title */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Title <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={editData.title}
+                    onChange={(e) => setEditData({ ...editData, title: e.target.value })}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Task title"
+                  />
+                </div>
+
+                {/* Description */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Description
+                  </label>
+                  <textarea
+                    value={editData.description || ""}
+                    onChange={(e) => setEditData({ ...editData, description: e.target.value })}
+                    rows={3}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Task description"
+                  />
+                </div>
+
+                {/* Priority */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <Flag size={16} className="inline mr-1" />
+                    Priority
+                  </label>
+                  <select
+                    value={editData.priority}
+                    onChange={(e) => setEditData({ ...editData, priority: e.target.value })}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    {priorityOptions.map(option => (
+                      <option key={option.key} value={option.key}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Assignee */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <User size={16} className="inline mr-1" />
+                    Assignee
+                  </label>
+                  <input
+                    type="text"
+                    value={editData.assignee || ""}
+                    onChange={(e) => setEditData({ ...editData, assignee: e.target.value })}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Assignee name"
+                  />
+                </div>
+
+                {/* Deadline */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <Calendar size={16} className="inline mr-1" />
+                    Deadline
+                  </label>
+                  <input
+                    type="date"
+                    value={editData.deadline || ""}
+                    onChange={(e) => setEditData({ ...editData, deadline: e.target.value })}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+
+                {/* Status */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Status
+                  </label>
+                  <select
+                    value={editData.status}
+                    onChange={(e) => setEditData({ ...editData, status: e.target.value })}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    {statusOptions.map(option => (
+                      <option key={option.key} value={option.key}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Tags */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Tags
+                  </label>
+                  <input
+                    type="text"
+                    value={editData.tags}
+                    onChange={(e) => setEditData({ ...editData, tags: e.target.value })}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Comma-separated tags"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Separate multiple tags with commas</p>
+                </div>
+              </div>
+
+              {/* Modal Actions */}
+              <div className="flex gap-3 mt-6 pt-4 border-t">
+                <button
+                  onClick={handleCancelEdit}
+                  className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-lg transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSaveEdit}
+                  disabled={!editData.title?.trim()}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-2"
+                >
+                  <Save size={16} />
+                  Save Changes
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -187,7 +325,7 @@ function Column({ column, tasks, moveTask, deleteTask, editTask, onDrop, onDragO
 }
 
 export default function Kanban({name}) {
-  const [tasks, setTasks] = useState(initialTasks);
+  const [tasks, setTasks] = useState(sampleTasks);
   const [draggedTask, setDraggedTask] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterPriority, setFilterPriority] = useState("");
@@ -202,7 +340,7 @@ export default function Kanban({name}) {
     tags: "",
   });
 
-  const nextId = useRef(Math.max(...tasks.map(t => t.id)) + 1);
+  const nextId = useRef(getNextTaskId());
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -242,7 +380,7 @@ export default function Kanban({name}) {
   const addTask = () => {
     if (!newTask.title || !newTask.deadline) return;
     
-    const task = {
+    const task = addTimestamps({
       id: nextId.current++,
       title: newTask.title,
       description: newTask.description,
@@ -251,7 +389,8 @@ export default function Kanban({name}) {
       priority: newTask.priority,
       assignee: newTask.assignee,
       tags: newTask.tags ? newTask.tags.split(",").map(tag => tag.trim()) : [],
-    };
+      position: tasks.filter(t => t.status === "toDo").length,
+    });
     
     setTasks([...tasks, task]);
     setNewTask({
@@ -381,10 +520,11 @@ export default function Kanban({name}) {
                 onChange={(e) => setNewTask({ ...newTask, priority: e.target.value })}
                 className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                <option value="low">Low Priority</option>
-                <option value="medium">Medium Priority</option>
-                <option value="high">High Priority</option>
-                <option value="urgent">Urgent Priority</option>
+                {priorityOptions.map(option => (
+                  <option key={option.key} value={option.key}>
+                    {option.label}
+                  </option>
+                ))}
               </select>
               <input
                 type="text"
