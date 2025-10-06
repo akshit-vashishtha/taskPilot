@@ -15,6 +15,21 @@ function RatingCircle({ score }) {
 }
 
 export default function Profiles() {
+  // Block access when not logged in
+  import('js-cookie');
+  const Cookies = require('js-cookie');
+  const isLogged = Boolean(Cookies.get('token'));
+  if (!isLogged) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="bg-white p-8 rounded-lg shadow">
+          <h2 className="text-xl font-semibold">Log in first</h2>
+          <p className="text-sm text-gray-500 mt-2">You must be logged in to view profiles.</p>
+        </div>
+      </div>
+    )
+  }
+
   // sampleTasks is exported as named export; adapt if default import fails
   const tasks = useMemo(() => sampleTasks || [], [])
 

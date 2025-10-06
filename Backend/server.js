@@ -19,9 +19,15 @@ app.use(cors());
 const protect = require('./middleware/authmiddleware');
 
 
-const PORT = process.env.PORT;
+// Use a sensible default so the server can start during local development
+const PORT = process.env.PORT || 5000;
 app.use(express.json());
 app.use('/', loginRouter);
+
+// Lightweight health check for quick diagnostics
+app.get('/health', (req, res) => {
+    res.status(200).json({ status: 'ok', pid: process.pid });
+});
 
 // app.use('/dashboard', protect, jobRouter);
 
