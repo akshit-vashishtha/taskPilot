@@ -1,13 +1,20 @@
 import React from 'react'
-import Landing from './components/Landing'
-import ProjectBoard from './components/ProjectBoard'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import Navbar from './components/Navbar'
 import Kanban from './components/Kanban'
-import Login from './components/Login'
-import Signup from './components/Signup'
+import Profiles from './components/Profiles'
+
 export default function App() {
   return (
-    <div>
-      <Kanban/>
-    </div>
+    <Router>
+      <div className="min-h-screen">
+        <Navbar />
+        <Routes>
+          <Route path="/" element={<Navigate to="/kanban" replace />} />
+          <Route path="/kanban" element={<Kanban name="Kanban" />} />
+          <Route path="/profiles" element={<Profiles />} />
+        </Routes>
+      </div>
+    </Router>
   )
 }
