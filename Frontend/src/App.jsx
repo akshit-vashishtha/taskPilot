@@ -12,7 +12,8 @@ export default function App() {
       <div className="min-h-screen">
         <Navbar />
         <Routes>
-          <Route path="/" element={<Navigate to="/kanban" replace />} />
+          {/* Default to login so new users hit the auth page first */}
+          <Route path="/" element={<Navigate to="/login" replace />} />
           <Route path="/kanban" element={<Kanban name="Kanban" />} />
           <Route path="/profiles" element={<Profiles />} />
           <Route path="/login" element={<Login />} />

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import Cookies from 'js-cookie'
 import { Search, Plus, Filter, Calendar, Clock, Flag, User, MoreHorizontal, X, Save } from "lucide-react";
 import { sampleTasks, getNextTaskId, addTimestamps } from "../data/sampleTasks";
 import { columns, priorities, priorityOptions, statusOptions } from "../data/taskConfig";
@@ -381,6 +382,17 @@ function Column({ column, tasks, moveTask, deleteTask, editTask, onDrop, onDragO
 }
 
 export default function Kanban({name}) {
+  const isLogged = Boolean(Cookies.get('token'));
+  if (!isLogged) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="bg-white p-8 rounded-lg shadow">
+          <h2 className="text-xl font-semibold">Log in first</h2>
+          <p className="text-sm text-gray-500 mt-2">You must be logged in to view the Kanban board.</p>
+        </div>
+      </div>
+    )
+  }
   const [tasks, setTasks] = useState(sampleTasks);
   const [draggedTask, setDraggedTask] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
