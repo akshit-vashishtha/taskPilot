@@ -157,9 +157,8 @@ function TaskCard({ task, moveTask, deleteTask, editTask, onDragStart, onDragEnd
               <div className="space-y-4">
                 {/* Title */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Title <span className="text-red-500">*</span>
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                  <div className="text-red-500 text-sm mb-1">*</div>
                   <input
                     type="text"
                     value={editData.title}
@@ -189,6 +188,7 @@ function TaskCard({ task, moveTask, deleteTask, editTask, onDragStart, onDragEnd
                     <Flag size={16} className="inline mr-1" />
                     Priority
                   </label>
+                  <div className="text-red-500 text-sm mb-1">*</div>
                   <select
                     value={editData.priority}
                     onChange={(e) => setEditData({ ...editData, priority: e.target.value })}
@@ -208,6 +208,7 @@ function TaskCard({ task, moveTask, deleteTask, editTask, onDragStart, onDragEnd
                     <User size={16} className="inline mr-1" />
                     Assignee
                   </label>
+                  <div className="text-red-500 text-sm mb-1">*</div>
                   <input
                     type="text"
                     value={editData.assignee || ""}
@@ -223,6 +224,7 @@ function TaskCard({ task, moveTask, deleteTask, editTask, onDragStart, onDragEnd
                     <Calendar size={16} className="inline mr-1" />
                     Deadline
                   </label>
+                  <div className="text-red-500 text-sm mb-1">*</div>
                   <input
                     type="date"
                     value={editData.deadline || ""}
@@ -387,6 +389,10 @@ export default function Kanban({name}) {
     riskScore: 3,
     impactScore: 5,
   });
+
+  const isAddFormValid = () => {
+    return newTask.title?.trim() && newTask.priority && newTask.deadline && newTask.assignee?.trim();
+  };
   
 
   const nextId = useRef(getNextTaskId());
@@ -550,13 +556,16 @@ export default function Kanban({name}) {
         <div className="bg-white border-b border-gray-200 p-4 shadow-sm">
           <div className="max-w-7xl mx-auto">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
-              <input
-                type="text"
-                placeholder="Task title *"
-                value={newTask.title}
-                onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
-                className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
+              <div>
+                <div className="text-red-500 text-sm mb-1">*</div>
+                <input
+                  type="text"
+                  placeholder="Task title *"
+                  value={newTask.title}
+                  onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
+                  className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
               <input
                 type="text"
                 placeholder="Description"
@@ -564,30 +573,39 @@ export default function Kanban({name}) {
                 onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
                 className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
-              <input
-                type="date"
-                value={newTask.deadline}
-                onChange={(e) => setNewTask({ ...newTask, deadline: e.target.value })}
-                className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-              <select
-                value={newTask.priority}
-                onChange={(e) => setNewTask({ ...newTask, priority: e.target.value })}
-                className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                {priorityOptions.map(option => (
-                  <option key={option.key} value={option.key}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-              <input
-                type="text"
-                placeholder="Assignee"
-                value={newTask.assignee}
-                onChange={(e) => setNewTask({ ...newTask, assignee: e.target.value })}
-                className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
+              <div>
+                <div className="text-red-500 text-sm mb-1">*</div>
+                <input
+                  type="date"
+                  value={newTask.deadline}
+                  onChange={(e) => setNewTask({ ...newTask, deadline: e.target.value })}
+                  className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+              <div>
+                <div className="text-red-500 text-sm mb-1">*</div>
+                <select
+                  value={newTask.priority}
+                  onChange={(e) => setNewTask({ ...newTask, priority: e.target.value })}
+                  className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  {priorityOptions.map(option => (
+                    <option key={option.key} value={option.key}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <div className="text-red-500 text-sm mb-1">*</div>
+                <input
+                  type="text"
+                  placeholder="Assignee"
+                  value={newTask.assignee}
+                  onChange={(e) => setNewTask({ ...newTask, assignee: e.target.value })}
+                  className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
               <input
                 type="text"
                 placeholder="Tags (comma-separated)"
@@ -632,11 +650,18 @@ export default function Kanban({name}) {
                 />
               </div>
             </div>
+              <p className="text-xs text-gray-500 mt-2 lg:col-span-6">If the non-mandatory inputs are not filled, they'll be assessed and completed by AI</p>
             <div className="flex gap-2 mt-4">
               <button
-                onClick={addTask}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition"
-              >
+                onClick={() => {
+                  if (!isAddFormValid()) {
+                    alert('Please fill the required fields: Task title, Priority, Date and Assignee.');
+                    return;
+                  }
+                  addTask();
+                }}
+                disabled={!isAddFormValid()}
+                className={`px-4 py-2 rounded-lg transition text-white ${isAddFormValid() ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-300 cursor-not-allowed'}`}>
                 Add Task
               </button>
               <button

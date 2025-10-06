@@ -24,6 +24,11 @@ export default function TaskManagement() {
     return new Date(dueDate) < new Date();
   };
 
+  // Form validation: required fields
+  const isAddFormValid = () => {
+    return newTask.title?.trim() && newTask.priority && newTask.dueDate && newTask.assignee?.trim();
+  };
+
   const addTask = () => {
     if (!newTask.title.trim()) {
       alert("Task title is required!");
@@ -117,9 +122,8 @@ export default function TaskManagement() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               {/* Title - Required */}
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Title <span className="text-red-500">*</span>
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                <div className="text-red-500 text-sm mb-1">*</div>
                 <input
                   type="text"
                   placeholder="e.g., Write Documentation"
@@ -149,6 +153,7 @@ export default function TaskManagement() {
                   <Flag size={16} className="inline mr-1" />
                   Priority
                 </label>
+                <div className="text-red-500 text-sm mb-1">*</div>
                 <select
                   value={newTask.priority}
                   onChange={(e) => setNewTask({ ...newTask, priority: e.target.value })}
@@ -183,6 +188,7 @@ export default function TaskManagement() {
                   <Calendar size={16} className="inline mr-1" />
                   Due Date
                 </label>
+                <div className="text-red-500 text-sm mb-1">*</div>
                 <input
                   type="date"
                   value={newTask.dueDate}
@@ -226,6 +232,7 @@ export default function TaskManagement() {
               </div>
 
               {/* AI Metrics Inputs */}
+                  <div className="text-red-500 text-sm mb-1">*</div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Complexity (1-10)</label>
                 <input
@@ -263,6 +270,9 @@ export default function TaskManagement() {
               </div>
             </div>
 
+              {/* Non-mandatory input note */}
+              <p className="text-xs text-gray-500 mt-2 md:col-span-2">If the non-mandatory inputs are not filled, they'll be assessed and completed by AI</p>
+
             {/* Form Actions */}
             <div className="flex gap-2 justify-end">
               <button
@@ -272,9 +282,15 @@ export default function TaskManagement() {
                 Cancel
               </button>
               <button
-                onClick={addTask}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition"
-              >
+                onClick={() => {
+                  if (!isAddFormValid()) {
+                    alert('Please fill the required fields: Title, Priority, Date and Assignee.');
+                    return;
+                  }
+                  addTask();
+                }}
+                disabled={!isAddFormValid()}
+                className={`px-4 py-2 rounded-lg transition text-white ${isAddFormValid() ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-300 cursor-not-allowed'}`}>
                 Create Task
               </button>
             </div>
