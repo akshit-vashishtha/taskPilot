@@ -14,9 +14,10 @@ export default function TaskManagement() {
     dueDate: "",
     tags: "",
     status: "backlog",
+    complexityScore: 5,
+    riskScore: 3,
+    impactScore: 5,
   });
-
-  const nextId = useRef(getNextTaskId());
 
   const isOverdue = (dueDate, status) => {
     if (status === "done") return false;
@@ -36,15 +37,18 @@ export default function TaskManagement() {
       priority: newTask.priority,
       assignee: newTask.assignee.trim(),
       dueDate: newTask.dueDate,
-      tags: newTask.tags 
-        ? newTask.tags.split(",").map(tag => tag.trim()).filter(tag => tag) 
+      tags: newTask.tags
+        ? newTask.tags.split(",").map(tag => tag.trim()).filter(tag => tag)
         : [],
       status: newTask.status,
       position: tasks.filter(t => t.status === newTask.status).length, // Position for drag-and-drop
+      complexityScore: Number(newTask.complexityScore) || 1,
+      riskScore: Number(newTask.riskScore) || 1,
+      impactScore: Number(newTask.impactScore) || 1,
     });
 
     setTasks([...tasks, task]);
-    
+
     // Reset form
     setNewTask({
       title: "",
@@ -54,8 +58,11 @@ export default function TaskManagement() {
       dueDate: "",
       tags: "",
       status: "backlog",
+      complexityScore: 5,
+      riskScore: 3,
+      impactScore: 5,
     });
-    
+
     setShowAddForm(false);
   };
 
@@ -217,6 +224,43 @@ export default function TaskManagement() {
                 />
                 <p className="text-xs text-gray-500 mt-1">Separate multiple tags with commas</p>
               </div>
+
+              {/* AI Metrics Inputs */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Complexity (1-10)</label>
+                <input
+                  type="number"
+                  min={1}
+                  max={10}
+                  value={newTask.complexityScore}
+                  onChange={(e) => setNewTask({ ...newTask, complexityScore: Number(e.target.value) })}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Risk (1-10)</label>
+                <input
+                  type="number"
+                  min={1}
+                  max={10}
+                  value={newTask.riskScore}
+                  onChange={(e) => setNewTask({ ...newTask, riskScore: Number(e.target.value) })}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Impact (1-10)</label>
+                <input
+                  type="number"
+                  min={1}
+                  max={10}
+                  value={newTask.impactScore}
+                  onChange={(e) => setNewTask({ ...newTask, impactScore: Number(e.target.value) })}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
             </div>
 
             {/* Form Actions */}
@@ -273,6 +317,16 @@ export default function TaskManagement() {
                   {task.description && (
                     <p className="text-gray-600 mb-3">{task.description}</p>
                   )}
+
+                  {/* AI Metrics display */}
+                  <div className="flex gap-3 flex-wrap mb-3 text-sm text-gray-700">
+                    <span className="font-medium">Complexity:</span>
+                    <span>{task.complexityScore}/10</span>
+                    <span className="font-medium">Risk:</span>
+                    <span>{task.riskScore}/10</span>
+                    <span className="font-medium">Impact:</span>
+                    <span>{task.impactScore}/10</span>
+                  </div>
 
                   <div className="flex flex-wrap items-center gap-4 mb-3">
                     {/* Priority */}
