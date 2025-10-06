@@ -1,13 +1,15 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom"; // import useNavigate
 
 export default function Signup() {
   // Step 1: Manage state for inputs
   const [formData, setFormData] = useState({
-    username: "",
+    name: "",
     email: "",
     password: "",
   });
+
+  const navigate = useNavigate(); // initialize navigate
 
   // Update state when inputs change
   const handleChange = (e) => {
@@ -24,7 +26,7 @@ export default function Signup() {
 
     try {
       // Step 3: Send data to backend
-      const response = await fetch("http://localhost:5000/api/signup", {
+      const response = await fetch("http://localhost:8000/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -37,6 +39,7 @@ export default function Signup() {
       const data = await response.json();
       console.log("Server response:", data);
       alert("Signup successful!");
+      navigate("/login"); // redirect to login page
     } catch (err) {
       console.error(err);
       alert("Something went wrong. Please try again.");
@@ -59,8 +62,8 @@ export default function Signup() {
             </label>
             <input
               type="text"
-              name="username"
-              value={formData.username}
+              name="name"
+              value={formData.name}
               onChange={handleChange}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all duration-200 hover:border-gray-400"
               placeholder="Enter your username"
