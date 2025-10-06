@@ -18,6 +18,9 @@ function TaskCard({ task, moveTask, deleteTask, editTask, onDragStart, onDragEnd
     const updatedTask = {
       ...editData,
       tags: editData.tags ? editData.tags.split(",").map(tag => tag.trim()).filter(tag => tag) : [],
+      complexityScore: editData.complexityScore === null || editData.complexityScore === undefined ? null : Number(editData.complexityScore),
+      riskScore: editData.riskScore === null || editData.riskScore === undefined ? null : Number(editData.riskScore),
+      impactScore: editData.impactScore === null || editData.impactScore === undefined ? null : Number(editData.impactScore),
       updatedAt: new Date().toISOString()
     };
     editTask(task.id, updatedTask);
@@ -112,11 +115,11 @@ function TaskCard({ task, moveTask, deleteTask, editTask, onDragStart, onDragEnd
 
         <div className="flex gap-3 flex-wrap text-sm text-gray-700 mb-2">
           <span className="font-medium">Complexity:</span>
-          <span>{task.complexityScore}/10</span>
+          <span>{task.complexityScore === null || task.complexityScore === undefined ? 'N/A' : `${task.complexityScore}/10`}</span>
           <span className="font-medium">Risk:</span>
-          <span>{task.riskScore}/10</span>
+          <span>{task.riskScore === null || task.riskScore === undefined ? 'N/A' : `${task.riskScore}/10`}</span>
           <span className="font-medium">Impact:</span>
-          <span>{task.impactScore}/10</span>
+          <span>{task.impactScore === null || task.impactScore === undefined ? 'N/A' : `${task.impactScore}/10`}</span>
         </div>
 
         {showDetails && (
@@ -267,39 +270,45 @@ function TaskCard({ task, moveTask, deleteTask, editTask, onDragStart, onDragEnd
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Complexity (1-10)</label>
-                  <input
-                    type="number"
-                    min={1}
-                    max={10}
-                    value={editData.complexityScore ?? 5}
-                    onChange={(e) => setEditData({ ...editData, complexityScore: Number(e.target.value) })}
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Complexity (0-10)</label>
+                  <select
+                    value={editData.complexityScore === null || editData.complexityScore === undefined ? '' : String(editData.complexityScore)}
+                    onChange={(e) => setEditData({ ...editData, complexityScore: e.target.value === '' ? null : Number(e.target.value) })}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
+                  >
+                    <option value="">Leave Blank</option>
+                    {Array.from({ length: 11 }).map((_, i) => (
+                      <option key={i} value={i}>{i}</option>
+                    ))}
+                  </select>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Risk (1-10)</label>
-                  <input
-                    type="number"
-                    min={1}
-                    max={10}
-                    value={editData.riskScore ?? 3}
-                    onChange={(e) => setEditData({ ...editData, riskScore: Number(e.target.value) })}
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Risk (0-10)</label>
+                  <select
+                    value={editData.riskScore === null || editData.riskScore === undefined ? '' : String(editData.riskScore)}
+                    onChange={(e) => setEditData({ ...editData, riskScore: e.target.value === '' ? null : Number(e.target.value) })}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
+                  >
+                    <option value="">Leave Blank</option>
+                    {Array.from({ length: 11 }).map((_, i) => (
+                      <option key={i} value={i}>{i}</option>
+                    ))}
+                  </select>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Impact (1-10)</label>
-                  <input
-                    type="number"
-                    min={1}
-                    max={10}
-                    value={editData.impactScore ?? 5}
-                    onChange={(e) => setEditData({ ...editData, impactScore: Number(e.target.value) })}
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Impact (0-10)</label>
+                  <select
+                    value={editData.impactScore === null || editData.impactScore === undefined ? '' : String(editData.impactScore)}
+                    onChange={(e) => setEditData({ ...editData, impactScore: e.target.value === '' ? null : Number(e.target.value) })}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
+                  >
+                    <option value="">Leave Blank</option>
+                    {Array.from({ length: 11 }).map((_, i) => (
+                      <option key={i} value={i}>{i}</option>
+                    ))}
+                  </select>
                 </div>
               </div>
 
@@ -385,9 +394,9 @@ export default function Kanban({name}) {
     priority: "medium",
     assignee: "",
     tags: "",
-    complexityScore: 5,
-    riskScore: 3,
-    impactScore: 5,
+    complexityScore: null,
+    riskScore: null,
+    impactScore: null,
   });
 
   const isAddFormValid = () => {
@@ -445,9 +454,9 @@ export default function Kanban({name}) {
       assignee: newTask.assignee,
       tags: newTask.tags ? newTask.tags.split(",").map(tag => tag.trim()) : [],
       position: tasks.filter(t => t.status === "toDo").length,
-      complexityScore: Number(newTask.complexityScore) || 1,
-      riskScore: Number(newTask.riskScore) || 1,
-      impactScore: Number(newTask.impactScore) || 1,
+      complexityScore: newTask.complexityScore === null ? null : Number(newTask.complexityScore),
+      riskScore: newTask.riskScore === null ? null : Number(newTask.riskScore),
+      impactScore: newTask.impactScore === null ? null : Number(newTask.impactScore),
     });
     
     setTasks([...tasks, task]);
@@ -458,9 +467,9 @@ export default function Kanban({name}) {
       priority: "medium",
       assignee: "",
       tags: "",
-      complexityScore: 5,
-      riskScore: 3,
-      impactScore: 5,
+      complexityScore: null,
+      riskScore: null,
+      impactScore: null,
     });
     setShowAddForm(false);
   };
@@ -615,39 +624,45 @@ export default function Kanban({name}) {
               />
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Complexity (1-10)</label>
-                <input
-                  type="number"
-                  min={1}
-                  max={10}
-                  value={newTask.complexityScore}
-                  onChange={(e) => setNewTask({ ...newTask, complexityScore: Number(e.target.value) })}
+                <label className="block text-sm font-medium text-gray-700 mb-1">Complexity (0-10)</label>
+                <select
+                  value={newTask.complexityScore === null ? '' : String(newTask.complexityScore)}
+                  onChange={(e) => setNewTask({ ...newTask, complexityScore: e.target.value === '' ? null : Number(e.target.value) })}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
+                >
+                  <option value="">Leave Blank</option>
+                  {Array.from({ length: 11 }).map((_, i) => (
+                    <option key={i} value={i}>{i}</option>
+                  ))}
+                </select>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Risk (1-10)</label>
-                <input
-                  type="number"
-                  min={1}
-                  max={10}
-                  value={newTask.riskScore}
-                  onChange={(e) => setNewTask({ ...newTask, riskScore: Number(e.target.value) })}
+                <label className="block text-sm font-medium text-gray-700 mb-1">Risk (0-10)</label>
+                <select
+                  value={newTask.riskScore === null ? '' : String(newTask.riskScore)}
+                  onChange={(e) => setNewTask({ ...newTask, riskScore: e.target.value === '' ? null : Number(e.target.value) })}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
+                >
+                  <option value="">Leave Blank</option>
+                  {Array.from({ length: 11 }).map((_, i) => (
+                    <option key={i} value={i}>{i}</option>
+                  ))}
+                </select>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Impact (1-10)</label>
-                <input
-                  type="number"
-                  min={1}
-                  max={10}
-                  value={newTask.impactScore}
-                  onChange={(e) => setNewTask({ ...newTask, impactScore: Number(e.target.value) })}
+                <label className="block text-sm font-medium text-gray-700 mb-1">Impact (0-10)</label>
+                <select
+                  value={newTask.impactScore === null ? '' : String(newTask.impactScore)}
+                  onChange={(e) => setNewTask({ ...newTask, impactScore: e.target.value === '' ? null : Number(e.target.value) })}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
+                >
+                  <option value="">Leave Blank</option>
+                  {Array.from({ length: 11 }).map((_, i) => (
+                    <option key={i} value={i}>{i}</option>
+                  ))}
+                </select>
               </div>
             </div>
               <p className="text-xs text-gray-500 mt-2 lg:col-span-6">If the non-mandatory inputs are not filled, they'll be assessed and completed by AI</p>
