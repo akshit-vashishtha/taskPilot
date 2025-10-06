@@ -14,13 +14,19 @@ export default function TaskManagement() {
     dueDate: "",
     tags: "",
     status: "backlog",
+    complexityScore: null,
+    riskScore: null,
+    impactScore: null,
   });
-
-  const nextId = useRef(getNextTaskId());
 
   const isOverdue = (dueDate, status) => {
     if (status === "done") return false;
     return new Date(dueDate) < new Date();
+  };
+
+  // Form validation: required fields
+  const isAddFormValid = () => {
+    return newTask.title?.trim() && newTask.priority && newTask.dueDate && newTask.assignee?.trim();
   };
 
   const addTask = () => {
@@ -36,15 +42,18 @@ export default function TaskManagement() {
       priority: newTask.priority,
       assignee: newTask.assignee.trim(),
       dueDate: newTask.dueDate,
-      tags: newTask.tags 
-        ? newTask.tags.split(",").map(tag => tag.trim()).filter(tag => tag) 
+      tags: newTask.tags
+        ? newTask.tags.split(",").map(tag => tag.trim()).filter(tag => tag)
         : [],
       status: newTask.status,
       position: tasks.filter(t => t.status === newTask.status).length, // Position for drag-and-drop
+      complexityScore: newTask.complexityScore === null ? null : Number(newTask.complexityScore),
+      riskScore: newTask.riskScore === null ? null : Number(newTask.riskScore),
+      impactScore: newTask.impactScore === null ? null : Number(newTask.impactScore),
     });
 
     setTasks([...tasks, task]);
-    
+
     // Reset form
     setNewTask({
       title: "",
@@ -54,8 +63,11 @@ export default function TaskManagement() {
       dueDate: "",
       tags: "",
       status: "backlog",
+      complexityScore: null,
+      riskScore: null,
+      impactScore: null,
     });
-    
+
     setShowAddForm(false);
   };
 
@@ -110,9 +122,8 @@ export default function TaskManagement() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               {/* Title - Required */}
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Title <span className="text-red-500">*</span>
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                <div className="text-red-500 text-sm mb-1">*</div>
                 <input
                   type="text"
                   placeholder="e.g., Write Documentation"
@@ -142,6 +153,7 @@ export default function TaskManagement() {
                   <Flag size={16} className="inline mr-1" />
                   Priority
                 </label>
+                <div className="text-red-500 text-sm mb-1">*</div>
                 <select
                   value={newTask.priority}
                   onChange={(e) => setNewTask({ ...newTask, priority: e.target.value })}
@@ -176,6 +188,7 @@ export default function TaskManagement() {
                   <Calendar size={16} className="inline mr-1" />
                   Due Date
                 </label>
+                <div className="text-red-500 text-sm mb-1">*</div>
                 <input
                   type="date"
                   value={newTask.dueDate}
@@ -217,7 +230,54 @@ export default function TaskManagement() {
                 />
                 <p className="text-xs text-gray-500 mt-1">Separate multiple tags with commas</p>
               </div>
+
+              {/* AI Metrics Inputs */}
+                  <div className="text-red-500 text-sm mb-1">*</div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Complexity (0-10)</label>
+                <select
+                  value={newTask.complexityScore === null ? '' : String(newTask.complexityScore)}
+                  onChange={(e) => setNewTask({ ...newTask, complexityScore: e.target.value === '' ? null : Number(e.target.value) })}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="">Leave Blank</option>
+                  {Array.from({ length: 11 }).map((_, i) => (
+                    <option key={i} value={i}>{i}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Risk (0-10)</label>
+                <select
+                  value={newTask.riskScore === null ? '' : String(newTask.riskScore)}
+                  onChange={(e) => setNewTask({ ...newTask, riskScore: e.target.value === '' ? null : Number(e.target.value) })}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="">Leave Blank</option>
+                  {Array.from({ length: 11 }).map((_, i) => (
+                    <option key={i} value={i}>{i}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Impact (0-10)</label>
+                <select
+                  value={newTask.impactScore === null ? '' : String(newTask.impactScore)}
+                  onChange={(e) => setNewTask({ ...newTask, impactScore: e.target.value === '' ? null : Number(e.target.value) })}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="">Leave Blank</option>
+                  {Array.from({ length: 11 }).map((_, i) => (
+                    <option key={i} value={i}>{i}</option>
+                  ))}
+                </select>
+              </div>
             </div>
+
+              {/* Non-mandatory input note */}
+              <p className="text-xs text-gray-500 mt-2 md:col-span-2">If the non-mandatory inputs are not filled, they'll be assessed and completed by AI</p>
 
             {/* Form Actions */}
             <div className="flex gap-2 justify-end">
@@ -228,9 +288,15 @@ export default function TaskManagement() {
                 Cancel
               </button>
               <button
-                onClick={addTask}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition"
-              >
+                onClick={() => {
+                  if (!isAddFormValid()) {
+                    alert('Please fill the required fields: Title, Priority, Date and Assignee.');
+                    return;
+                  }
+                  addTask();
+                }}
+                disabled={!isAddFormValid()}
+                className={`px-4 py-2 rounded-lg transition text-white ${isAddFormValid() ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-300 cursor-not-allowed'}`}>
                 Create Task
               </button>
             </div>
@@ -273,6 +339,16 @@ export default function TaskManagement() {
                   {task.description && (
                     <p className="text-gray-600 mb-3">{task.description}</p>
                   )}
+
+                  {/* AI Metrics display */}
+                  <div className="flex gap-3 flex-wrap mb-3 text-sm text-gray-700">
+                    <span className="font-medium">Complexity:</span>
+                    <span>{task.complexityScore === null || task.complexityScore === undefined ? 'N/A' : `${task.complexityScore}/10`}</span>
+                    <span className="font-medium">Risk:</span>
+                    <span>{task.riskScore === null || task.riskScore === undefined ? 'N/A' : `${task.riskScore}/10`}</span>
+                    <span className="font-medium">Impact:</span>
+                    <span>{task.impactScore === null || task.impactScore === undefined ? 'N/A' : `${task.impactScore}/10`}</span>
+                  </div>
 
                   <div className="flex flex-wrap items-center gap-4 mb-3">
                     {/* Priority */}
