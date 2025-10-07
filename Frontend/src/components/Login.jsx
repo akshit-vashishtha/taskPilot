@@ -1,11 +1,12 @@
 import React, { useState } from 'react'
-import { Link } from 'react-router-dom'
-import Cookies from 'js-cookie' // Add this import
+import { Link, useNavigate } from 'react-router-dom'
+import Cookies from 'js-cookie'
 
 export default function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const navigate = useNavigate() // Add this line
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -18,10 +19,9 @@ export default function Login() {
       })
       const data = await response.json()
       if (response.ok) {
-        // Save token in cookies
-        Cookies.set('token', data.token, { expires: 7 }) // expires in 7 days
+        Cookies.set('token', data.token, { expires: 7 })
         console.log('Login successful:', data)
-        // Redirect or further actions here
+        navigate('/kanban') // Redirect to /kanban on success
       } else {
         setError(data.message || 'Login failed')
       }
