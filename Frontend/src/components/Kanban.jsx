@@ -429,7 +429,12 @@ export default function Kanban({name}) {
         title: newTask.title,
         priority: newTask.priority,
         assignee: newTask.assignee,
-        deadline: newTask.deadline
+        deadline: newTask.deadline,
+        description: newTask.description,
+        tags: newTask.tags,
+        complexityScore: newTask.complexityScore,
+        riskScore: newTask.riskScore,
+        impactScore: newTask.impactScore
       });
 
       if (suggestions) {

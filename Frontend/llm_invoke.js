@@ -15,8 +15,13 @@ export async function generateTaskDetails(task) {
     Priority: ${task.priority}
     Assignee: ${task.assignee}
     Due Date: ${task.deadline}
+    ${task.description ? `Description: ${task.description}` : ''}
+    ${task.tags ? `Tags: ${task.tags}` : ''}
+    ${task.complexityScore !== null && task.complexityScore !== undefined ? `Complexity Score: ${task.complexityScore}` : ''}
+    ${task.riskScore !== null && task.riskScore !== undefined ? `Risk Score: ${task.riskScore}` : ''}
+    ${task.impactScore !== null && task.impactScore !== undefined ? `Impact Score: ${task.impactScore}` : ''}
     
-    Please generate the following optional fields for this task:
+    Please generate the following optional fields for this task. Use the provided details as context to make the generated fields more accurate.
     1. Description (a concise professional description)
     2. Tags (comma separated list of 3-5 relevant tags)
     3. Complexity Score (0-10 integer)
@@ -34,7 +39,6 @@ export async function generateTaskDetails(task) {
     });
 
     const content = response.choices[0].message.content;
-    // Remove any potential markdown code blocks if the model adds them
     const cleanContent = content.replace(/```json/g, '').replace(/```/g, '').trim();
     return JSON.parse(cleanContent);
   } catch (e) {
