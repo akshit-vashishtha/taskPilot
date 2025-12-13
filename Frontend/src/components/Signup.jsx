@@ -26,7 +26,7 @@ export default function Signup() {
 
     try {
       // Step 3: Send data to backend
-      const response = await fetch("http://localhost:8000/signup", {
+      const response = await fetch("http://localhost:800/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),

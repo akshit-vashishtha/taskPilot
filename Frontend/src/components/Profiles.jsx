@@ -15,6 +15,7 @@ function RatingCircle({ score }) {
 }
 
 export default function Profiles() {
+  console.log("inside profile");
   // Block access when not logged in
   import('js-cookie');
   const Cookies = require('js-cookie');
