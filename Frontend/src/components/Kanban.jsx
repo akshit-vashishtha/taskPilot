@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import Cookies from 'js-cookie'
-import { Search, Plus, Filter, Calendar, Clock, Flag, User, MoreHorizontal, X, Save } from "lucide-react";
+import { Search, Plus, Filter, Calendar, Clock, Flag, User, MoreHorizontal, X, Save, Sparkles, RotateCcw } from "lucide-react";
 import { sampleTasks, getNextTaskId, addTimestamps } from "../data/sampleTasks";
 import { columns, priorities, priorityOptions, statusOptions } from "../data/taskConfig";
+import { generateTaskDetails } from "../../llm_invoke";
 
 function TaskCard({ task, moveTask, deleteTask, editTask, onDragStart, onDragEnd }) {
   const [showDetails, setShowDetails] = useState(false);
@@ -410,9 +411,57 @@ export default function Kanban({name}) {
     riskScore: null,
     impactScore: null,
   });
+  const [isAiLoading, setIsAiLoading] = useState(false);
 
   const isAddFormValid = () => {
     return newTask.title?.trim() && newTask.priority && newTask.deadline && newTask.assignee?.trim();
+  };
+
+  const handleAiSuggestion = async () => {
+    if (!isAddFormValid()) {
+      alert("Please fill out the mandatory fields first!");
+      return;
+    }
+    
+    setIsAiLoading(true);
+    try {
+      const suggestions = await generateTaskDetails({
+        title: newTask.title,
+        priority: newTask.priority,
+        assignee: newTask.assignee,
+        deadline: newTask.deadline
+      });
+
+      if (suggestions) {
+        setNewTask(prev => ({
+          ...prev,
+          description: prev.description || suggestions.description,
+          tags: prev.tags || suggestions.tags,
+          complexityScore: prev.complexityScore !== null ? prev.complexityScore : suggestions.complexityScore,
+          riskScore: prev.riskScore !== null ? prev.riskScore : suggestions.riskScore,
+          impactScore: prev.impactScore !== null ? prev.impactScore : suggestions.impactScore
+        }));
+      }
+    } catch (error) {
+      console.error("Error generating AI suggestions:", error);
+      alert("Failed to generate AI suggestions. Please check your API key configuration.");
+    } finally {
+      setIsAiLoading(false);
+    }
+  };
+
+  const handleClear = () => {
+    setNewTask({
+      title: "",
+      description: "",
+      deadline: "",
+      priority: "medium",
+      assignee: "",
+      tags: "",
+      complexityScore: null,
+      riskScore: null,
+      impactScore: null,
+    });
   };
   
 
@@ -679,6 +728,21 @@ export default function Kanban({name}) {
             </div>
               <p className="text-xs text-gray-500 mt-2 lg:col-span-6">If the non-mandatory inputs are not filled, they'll be assessed and completed by AI</p>
             <div className="flex gap-2 mt-4">
+              <button
+                onClick={handleAiSuggestion}
+                disabled={isAiLoading}
+                className={`bg-purple-100 hover:bg-purple-200 text-purple-700 px-4 py-2 rounded-lg transition flex items-center gap-2 ${isAiLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                <Sparkles size={18} className={isAiLoading ? "animate-spin" : ""} />
+                {isAiLoading ? "Generating..." : "AI Suggestion"}
+              </button>
+              <button
+                onClick={handleClear}
+                className="bg-orange-100 hover:bg-orange-200 text-orange-700 px-4 py-2 rounded-lg transition flex items-center gap-2"
+              >
+                <RotateCcw size={18} />
+                Clear
+              </button>
               <button
                 onClick={() => {
                   if (!isAddFormValid()) {

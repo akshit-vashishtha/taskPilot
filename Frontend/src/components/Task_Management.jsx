@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Plus, Calendar, User, Tag, Flag, Clock, X } from 'lucide-react';
+import { Plus, Calendar, User, Tag, Flag, Clock, X, Sparkles } from 'lucide-react';
 import { sampleTasks, getNextTaskId, addTimestamps } from '../data/sampleTasks';
 import { priorities, statusOptions, priorityOptions } from '../data/taskConfig';
 
@@ -22,6 +22,17 @@ export default function TaskManagement() {
   const isOverdue = (dueDate, status) => {
     if (status === "done") return false;
     return new Date(dueDate) < new Date();
+  };
+
+  const handleAiSuggestion = () => {
+    setNewTask(prev => ({
+      ...prev,
+      description: prev.description || "AI generated description placeholder",
+      tags: prev.tags || "ai, suggestion, dummy",
+      complexityScore: prev.complexityScore !== null ? prev.complexityScore : 5,
+      riskScore: prev.riskScore !== null ? prev.riskScore : 3,
+      impactScore: prev.impactScore !== null ? prev.impactScore : 8
+    }));
   };
 
   // Form validation: required fields
@@ -281,6 +292,13 @@ export default function TaskManagement() {
 
             {/* Form Actions */}
             <div className="flex gap-2 justify-end">
+              <button
+                onClick={handleAiSuggestion}
+                className="bg-purple-100 hover:bg-purple-200 text-purple-700 px-4 py-2 rounded-lg transition flex items-center gap-2 mr-auto"
+              >
+                <Sparkles size={18} />
+                AI Suggestion
+              </button>
               <button
                 onClick={() => setShowAddForm(false)}
                 className="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-lg transition"
