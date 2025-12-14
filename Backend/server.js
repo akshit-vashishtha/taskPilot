@@ -6,6 +6,9 @@ const app = express();
  
 app.use(express.urlencoded({ extended: false }));
 
+const projectRouter=require('./routes/project')
+const userRouter=require('./routes/user')
+const taskRouter=require('./routes/task')
 const loginRouter = require('./routes/auth');
 dotenv.config(); 
 const cookieParser = require('cookie-parser');
@@ -23,6 +26,9 @@ const protect = require('./middleware/authmiddleware');
 const PORT = process.env.PORT || 5000;
 app.use(express.json());
 app.use('/', loginRouter);
+app.use('/project', projectRouter);
+app.use('/user', userRouter);
+app.use('/task', taskRouter);
 
 // Lightweight health check for quick diagnostics
 app.get('/health', (req, res) => {
