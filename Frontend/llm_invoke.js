@@ -46,3 +46,59 @@ export async function generateTaskDetails(task) {
     throw e;
   }
 }
+
+export async function generateDeveloperRating(kanban_data) {
+  const prompt = `
+    You are a senior engineering manager and project evaluation AI.
+
+    I have Kanban task data for a team. Each task contains:
+    - Status (toDo, inProgress, review, done)
+    - Priority
+    - Assignee
+    - Deadline
+    - Complexity Score
+    - Risk Score
+    - Impact Score
+    - History logs describing progress and decisions
+
+    Your job is to evaluate each developer’s performance based on this data.
+
+    Rating rules:
+    - Rate developers on a scale of 1 to 10 (decimals allowed).
+    - Consider:
+      1. Difficulty of work handled (complexity, risk, impact)
+      2. Execution quality and depth inferred from history logs
+      3. Task status progression (done > review > inProgress > toDo)
+      4. Ownership, responsibility, and production readiness
+    - High-quality in-progress or review work can score higher than completed low-effort tasks.
+    - Be fair, realistic, and avoid favoritism.
+
+    Kanban task data:
+    ${JSON.stringify(kanban_data, null, 2)}
+
+    Return the response in valid JSON format as an array.
+    Each item must contain:
+    {
+      "name": "Developer Name",
+      "developerRating": number,
+      "justification": "Short professional explanation"
+    }
+
+    Do not include markdown formatting like \`\`\`json.
+    Do not include any text outside the JSON response.
+  `;
+
+  try {
+    const response = await client.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: [{ role: "user", content: prompt }],
+    });
+
+    const content = response.choices[0].message.content;
+    const cleanContent = content.replace(/```json/g, '').replace(/```/g, '').trim();
+    return JSON.parse(cleanContent);
+  } catch (e) {
+    console.error("Developer rating generation failed", e);
+    throw e;
+  }
+}
