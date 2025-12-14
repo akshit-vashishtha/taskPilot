@@ -148,7 +148,7 @@ function TaskCard({ task, moveTask, deleteTask, editTask, onDragStart, onDragEnd
 
         {/* Edit Modal */}
         {showEditModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={handleCancelEdit}>
+          <div className="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-50" onClick={handleCancelEdit}>
             <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-gray-800">Edit Task</h3>
@@ -383,6 +383,84 @@ function Column({ column, tasks, moveTask, deleteTask, editTask, onDrop, onDragO
   );
 }
 
+const dummyRatings = [
+  {
+    "name": "Arjun Patel",
+    "developerRating": 6.8,
+    "justification": "Demonstrated solid upfront planning and UI design thinking, including accessibility considerations and token mapping. However, the task remains in the toDo stage, indicating limited execution progress so far."
+  },
+  {
+    "name": "Priya Sharma",
+    "developerRating": 8.4,
+    "justification": "Handled a high-complexity backend API task with strong execution depth. Added authentication middleware, validation, integration tests, and addressed race conditions, reflecting mature engineering practices despite the task still being in progress."
+  },
+  {
+    "name": "Rohit Kumar",
+    "developerRating": 7.2,
+    "justification": "Completed documentation work reliably with clear explanations and code samples. The task was low in complexity and risk, which limits overall impact despite timely completion."
+  },
+  {
+    "name": "Ananya Singh",
+    "developerRating": 7.5,
+    "justification": "Provided thoughtful and detailed code reviews, identified schema blockers, and caught performance regressions. Strong quality assurance mindset, though final delivery depends on others addressing feedback."
+  },
+  {
+    "name": "Karan Mehta",
+    "developerRating": 6.5,
+    "justification": "Initiated a high-impact CI/CD pipeline task and added initial workflow templates. Progress is currently blocked by external dependencies, limiting observable delivery impact."
+  },
+  {
+    "name": "David Kumar",
+    "developerRating": 9.1,
+    "justification": "Led a highly complex and critical database schema design with exceptional depth. Incorporated performance optimizations, migration and rollback strategies, load testing, and stakeholder requirements, showing strong system-level ownership."
+  },
+  {
+    "name": "Meera Nair",
+    "developerRating": 6.9,
+    "justification": "Made steady progress on mobile responsiveness with working prototypes and breakpoints. Execution is ongoing and awaiting broader QA, resulting in moderate current impact."
+  },
+  {
+    "name": "Neha Verma",
+    "developerRating": 8.9,
+    "justification": "Delivered a mission-critical authentication system under high urgency and risk. Addressed security edge cases, rollbacks, monitoring, and regression testing, demonstrating strong ownership and resilience."
+  },
+  {
+    "name": "Sahil Gupta",
+    "developerRating": 7.0,
+    "justification": "Contributed to analytics planning and data model prototyping while accommodating evolving requirements. Work is still in early stages, with execution impact yet to be fully realized."
+  },
+  {
+    "name": "Leena Roy",
+    "developerRating": 9.0,
+    "justification": "Achieved measurable performance gains through profiling, code-splitting, dependency optimization, and lazy loading. High-impact frontend work with clear, data-backed improvements."
+  },
+  {
+    "name": "Aisha Khan",
+    "developerRating": 6.6,
+    "justification": "Advanced onboarding flow design with approved wireframes, but execution is currently blocked by pending content. Contribution is aligned but limited at this stage."
+  },
+  {
+    "name": "Vikram Desai",
+    "developerRating": 8.7,
+    "justification": "Implemented a robust feature flagging system with remote configuration, audit logs, SDK support, and analytics integration. High-leverage infrastructure work nearing completion pending security review."
+  },
+  {
+    "name": "Nina Bose",
+    "developerRating": 7.3,
+    "justification": "Progressed steadily on accessibility improvements with clear prioritization and collaboration. Task impact is moderate, but execution shows care and correctness."
+  },
+  {
+    "name": "Omar Farouk",
+    "developerRating": 7.8,
+    "justification": "Effectively managed beta feedback collection and triage, resolving key issues quickly and establishing a repeatable process. Strong operational ownership and coordination."
+  },
+  {
+    "name": "Priyanka Iyer",
+    "developerRating": 6.4,
+    "justification": "Outlined design considerations for email notifications, but implementation has not yet started. Low-priority task with limited current execution signal."
+  }
+];
+
 export default function Kanban({name}) {
   const isLogged = Boolean(Cookies.get('token'));
   if (!isLogged) {
@@ -580,6 +658,7 @@ export default function Kanban({name}) {
   });
 
   const uniqueAssignees = [...new Set(tasks.map(task => task.assignee).filter(Boolean))];
+  const [showRatingModal, setShowRatingModal] = useState(false);
 
   return (
     <div className="flex flex-col h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-100">
@@ -588,6 +667,7 @@ export default function Kanban({name}) {
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-between mb-4">
             <h1 className="text-2xl font-bold text-gray-800">{name}</h1>
+            <div className="flex gap-3">
             <button
               onClick={() => setShowAddForm(!showAddForm)}
               className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition"
@@ -595,6 +675,15 @@ export default function Kanban({name}) {
               <Plus size={18} />
               Add Task
             </button>
+
+            <button
+              className="bg-purple-100 hover:bg-purple-200 text-purple-700 px-4 py-2 rounded-lg transition flex items-center gap-2"
+              onClick={() => setShowRatingModal(true)}
+            >
+              <Sparkles size={18} />
+              Developer Rating
+            </button>
+            </div>
           </div>
           
           {/* Filters */}
@@ -780,6 +869,49 @@ export default function Kanban({name}) {
           </div>
         </div>
       )}
+
+    {showRatingModal && (
+      <div className="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-50">
+        {/* Increased width (max-w-3xl) and height (max-h-[85vh]) for the list */}
+        <div className="bg-white rounded-xl p-6 w-full max-w-3xl shadow-2xl relative max-h-[85vh] flex flex-col">
+          
+          <button 
+            onClick={() => setShowRatingModal(false)}
+            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 transition"
+          >
+            <X size={20} />
+          </button>
+
+          <h2 className="text-2xl font-bold mb-6 text-gray-800 flex items-center gap-2">
+            <Sparkles className="text-purple-600" />
+            Developer Ratings
+          </h2>
+          
+          {/* Scrollable Area */}
+          <div className="overflow-y-auto pr-2 space-y-4">
+            {dummyRatings.map((rating, index) => (
+              <div key={index} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow bg-gray-50/50">
+                <div className="flex justify-between items-start mb-2">
+                  <h3 className="font-semibold text-lg text-gray-800">{rating.name}</h3>
+                  
+                  {/* Color-coded Badge */}
+                  <div className={`px-3 py-1 rounded-full text-sm font-bold ${
+                    rating.developerRating >= 8 ? 'bg-green-100 text-green-700' :
+                    rating.developerRating >= 7 ? 'bg-blue-100 text-blue-700' :
+                    'bg-orange-100 text-orange-700'
+                  }`}>
+                    {rating.developerRating} / 10
+                  </div>
+                </div>
+                <p className="text-gray-600 text-sm leading-relaxed">
+                  {rating.justification}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    )}
 
       {/* Kanban Board */}
       <div className="flex-1 p-4 overflow-hidden">
