@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import Cookies from 'js-cookie'
 import { Search, Plus, Filter, Calendar, Clock, Flag, User, MoreHorizontal, X, Save, Sparkles, RotateCcw } from "lucide-react";
-import { sampleTasks, getNextTaskId, addTimestamps } from "../data/sampleTasks";
-import { columns, priorities, priorityOptions, statusOptions } from "../data/taskConfig";
-import { generateTaskDetails } from "../../llm_invoke";
-import { loadTasks, saveTasks } from "../data/taskStorage";
+import { sampleTasks, getNextTaskId, addTimestamps } from "./sampleTasks";
+import { columns, priorities, priorityOptions, statusOptions } from "./taskConfig";
+import { generateTaskDetails } from "../../../llm_invoke";
+import { loadTasks, saveTasks } from "./taskStorage";
 
 function TaskCard({ task, moveTask, deleteTask, editTask, onDragStart, onDragEnd }) {
   const [showDetails, setShowDetails] = useState(false);
@@ -383,7 +383,7 @@ function Column({ column, tasks, moveTask, deleteTask, editTask, onDrop, onDragO
   );
 }
 
-export default function Kanban({name}) {
+export default function Kan({name}) {
   const isLogged = Boolean(Cookies.get('token'));
   if (!isLogged) {
     return (
@@ -483,19 +483,27 @@ export default function Kanban({name}) {
 
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      const now = new Date();
-      setTasks((prev) =>
-        prev.map((task) => {
-          if (new Date(task.deadline) < now && task.status !== "done") {
-            return { ...task, status: "backlog" };
-          }
-          return task;
-        })
-      );
-    }, 60000);
-    return () => clearInterval(interval);
-  }, []);
+  const applyOverdue = () => {
+    const now = new Date();
+    setTasks((prev) =>
+      prev.map((task) => {
+        if (new Date(task.deadline) < now && task.status !== "done") {
+          return { ...task, status: "backlog" };
+        }
+        return task;
+      })
+    );
+  };
+
+  // run immediately on mount
+  applyOverdue();
+
+  // then every minute
+  const interval = setInterval(applyOverdue, 60);
+
+  return () => clearInterval(interval);
+}, []);
+
 
   const moveTask = (taskId, newStatus) => {
     setTasks((prev) =>
