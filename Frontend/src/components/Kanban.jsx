@@ -3,7 +3,7 @@ import Cookies from 'js-cookie'
 import { Search, Plus, Filter, Calendar, Clock, Flag, User, MoreHorizontal, X, Save, Sparkles, RotateCcw } from "lucide-react";
 import { sampleTasks, getNextTaskId, addTimestamps } from "../data/sampleTasks";
 import { columns, priorities, priorityOptions, statusOptions } from "../data/taskConfig";
-import { generateTaskDetails } from "../../llm_invoke";
+import { generateTaskDetails, generateDeveloperRating } from "../../llm_invoke";
 import { loadTasks, saveTasks } from "../data/taskStorage";
 
 function TaskCard({ task, moveTask, deleteTask, editTask, onDragStart, onDragEnd }) {
@@ -383,84 +383,6 @@ function Column({ column, tasks, moveTask, deleteTask, editTask, onDrop, onDragO
   );
 }
 
-const dummyRatings = [
-  {
-    "name": "Arjun Patel",
-    "developerRating": 6.8,
-    "justification": "Demonstrated solid upfront planning and UI design thinking, including accessibility considerations and token mapping. However, the task remains in the toDo stage, indicating limited execution progress so far."
-  },
-  {
-    "name": "Priya Sharma",
-    "developerRating": 8.4,
-    "justification": "Handled a high-complexity backend API task with strong execution depth. Added authentication middleware, validation, integration tests, and addressed race conditions, reflecting mature engineering practices despite the task still being in progress."
-  },
-  {
-    "name": "Rohit Kumar",
-    "developerRating": 7.2,
-    "justification": "Completed documentation work reliably with clear explanations and code samples. The task was low in complexity and risk, which limits overall impact despite timely completion."
-  },
-  {
-    "name": "Ananya Singh",
-    "developerRating": 7.5,
-    "justification": "Provided thoughtful and detailed code reviews, identified schema blockers, and caught performance regressions. Strong quality assurance mindset, though final delivery depends on others addressing feedback."
-  },
-  {
-    "name": "Karan Mehta",
-    "developerRating": 6.5,
-    "justification": "Initiated a high-impact CI/CD pipeline task and added initial workflow templates. Progress is currently blocked by external dependencies, limiting observable delivery impact."
-  },
-  {
-    "name": "David Kumar",
-    "developerRating": 9.1,
-    "justification": "Led a highly complex and critical database schema design with exceptional depth. Incorporated performance optimizations, migration and rollback strategies, load testing, and stakeholder requirements, showing strong system-level ownership."
-  },
-  {
-    "name": "Meera Nair",
-    "developerRating": 6.9,
-    "justification": "Made steady progress on mobile responsiveness with working prototypes and breakpoints. Execution is ongoing and awaiting broader QA, resulting in moderate current impact."
-  },
-  {
-    "name": "Neha Verma",
-    "developerRating": 8.9,
-    "justification": "Delivered a mission-critical authentication system under high urgency and risk. Addressed security edge cases, rollbacks, monitoring, and regression testing, demonstrating strong ownership and resilience."
-  },
-  {
-    "name": "Sahil Gupta",
-    "developerRating": 7.0,
-    "justification": "Contributed to analytics planning and data model prototyping while accommodating evolving requirements. Work is still in early stages, with execution impact yet to be fully realized."
-  },
-  {
-    "name": "Leena Roy",
-    "developerRating": 9.0,
-    "justification": "Achieved measurable performance gains through profiling, code-splitting, dependency optimization, and lazy loading. High-impact frontend work with clear, data-backed improvements."
-  },
-  {
-    "name": "Aisha Khan",
-    "developerRating": 6.6,
-    "justification": "Advanced onboarding flow design with approved wireframes, but execution is currently blocked by pending content. Contribution is aligned but limited at this stage."
-  },
-  {
-    "name": "Vikram Desai",
-    "developerRating": 8.7,
-    "justification": "Implemented a robust feature flagging system with remote configuration, audit logs, SDK support, and analytics integration. High-leverage infrastructure work nearing completion pending security review."
-  },
-  {
-    "name": "Nina Bose",
-    "developerRating": 7.3,
-    "justification": "Progressed steadily on accessibility improvements with clear prioritization and collaboration. Task impact is moderate, but execution shows care and correctness."
-  },
-  {
-    "name": "Omar Farouk",
-    "developerRating": 7.8,
-    "justification": "Effectively managed beta feedback collection and triage, resolving key issues quickly and establishing a repeatable process. Strong operational ownership and coordination."
-  },
-  {
-    "name": "Priyanka Iyer",
-    "developerRating": 6.4,
-    "justification": "Outlined design considerations for email notifications, but implementation has not yet started. Low-priority task with limited current execution signal."
-  }
-];
-
 export default function Kanban({name}) {
   const isLogged = Boolean(Cookies.get('token'));
   if (!isLogged) {
@@ -476,6 +398,10 @@ export default function Kanban({name}) {
   const [tasks, setTasks] = useState(() => loadTasks(sampleTasks));
   const [draggedTask, setDraggedTask] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [developerRatings, setDeveloperRatings] = useState( () => {
+    const saved = localStorage.getItem("developer_ratings");
+    return saved ? JSON.parse(saved) : [];
+  })
   const [filterPriority, setFilterPriority] = useState("");
   const [filterAssignee, setFilterAssignee] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
@@ -491,6 +417,7 @@ export default function Kanban({name}) {
     impactScore: null,
   });
   const [isAiLoading, setIsAiLoading] = useState(false);
+  const [isRatingLoading, setIsRatingLoading] = useState(false);
 
   useEffect(() => {
   saveTasks(tasks);
@@ -678,7 +605,24 @@ export default function Kanban({name}) {
 
             <button
               className="bg-purple-100 hover:bg-purple-200 text-purple-700 px-4 py-2 rounded-lg transition flex items-center gap-2"
-              onClick={() => setShowRatingModal(true)}
+              onClick={ async () => {
+                setShowRatingModal(true);
+                setIsRatingLoading(true);
+                try {
+                  const storedTasks = localStorage.getItem("kanban_tasks");
+                  // invoke llm
+                  const kanbanData = JSON.parse(storedTasks);
+                  const generated_developer_ratings = await generateDeveloperRating(kanbanData);
+                  setDeveloperRatings(generated_developer_ratings);
+                  localStorage.setItem("developer_ratings", JSON.stringify(generated_developer_ratings));
+                  console.log("Generated Developer Ratings: \n", generated_developer_ratings);
+                } catch (error) {
+                  console.error("Failed to generate ratings", error);
+                } finally {
+                  setIsRatingLoading(false);
+                }
+              }
+              }
             >
               <Sparkles size={18} />
               Developer Rating
@@ -889,8 +833,18 @@ export default function Kanban({name}) {
           
           {/* Scrollable Area */}
           <div className="overflow-y-auto pr-2 space-y-4">
-            {dummyRatings.map((rating, index) => (
-              <div key={index} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow bg-gray-50/50">
+            {isRatingLoading ? (
+              <div className="flex flex-col items-center justify-center py-12 text-gray-500">
+                <Sparkles className="animate-spin mb-3 text-purple-500" size={32} />
+                <p>Analyzing performance metrics...</p>
+              </div>
+            ) : (
+              developerRatings.map((rating, index) => (
+              <div 
+                key={index} 
+                className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow bg-gray-50/50 animate-fade-in-up"
+                style={{ animationDelay: `${index * 150}ms` }}
+              >
                 <div className="flex justify-between items-start mb-2">
                   <h3 className="font-semibold text-lg text-gray-800">{rating.name}</h3>
                   
@@ -907,7 +861,8 @@ export default function Kanban({name}) {
                   {rating.justification}
                 </p>
               </div>
-            ))}
+            ))
+            )}
           </div>
         </div>
       </div>
