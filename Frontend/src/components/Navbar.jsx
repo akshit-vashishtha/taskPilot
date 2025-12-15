@@ -1,17 +1,17 @@
-import React, { useEffect, useState } from 'react'
-import { NavLink } from 'react-router-dom'
-import Cookies from 'js-cookie'
+import React, { useEffect, useState } from 'react';
+import { NavLink, Link, useNavigate } from 'react-router-dom';
+import Cookies from 'js-cookie';
 
-const linkBase = 'px-4 py-2 rounded-md text-sm font-medium'
-const active = 'bg-blue-600 text-white'
-const inactive = 'text-gray-700 hover:bg-gray-100'
+const linkBase = 'px-4 py-2 rounded-md text-sm font-medium';
+const active = 'bg-blue-600 text-white';
+const inactive = 'text-gray-700 hover:bg-gray-100';
 
 export default function Navbar() {
+  const navigate = useNavigate();
   const [isLogged, setIsLogged] = useState(Boolean(Cookies.get('token')));
 
   useEffect(() => {
     const onAuth = () => setIsLogged(Boolean(Cookies.get('token')));
-    // listen for manual auth change events
     window.addEventListener('authChanged', onAuth);
     return () => window.removeEventListener('authChanged', onAuth);
   }, []);
@@ -21,26 +21,28 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center gap-4">
-            <div className="text-xl font-bold">taskPilot</div>
+            {/* Logo */}
+            <Link to="/" className="text-xl font-bold text-black">
+              taskPilot
+            </Link>
+
             <div className="flex items-center gap-1 bg-gray-50 p-1 rounded-md">
               {isLogged ? (
                 <>
                   <NavLink
-                    to="/kanban"
-                    className={({ isActive }) => `${linkBase} ${isActive ? active : inactive}`}
+                    to="/profile"
+                    className={({ isActive }) =>
+                      `${linkBase} ${isActive ? active : inactive}`
+                    }
                   >
-                    Kanban
+                    Profile
                   </NavLink>
-                  <NavLink
-                    to="/profiles"
-                    className={({ isActive }) => `${linkBase} ${isActive ? active : inactive}`}
-                  >
-                    Profiles
-                  </NavLink>
+
                   <button
                     onClick={() => {
                       Cookies.remove('token');
                       window.dispatchEvent(new Event('authChanged'));
+                      navigate('/login', { replace: true });
                     }}
                     className={`${linkBase} ${inactive}`}
                   >
@@ -51,13 +53,18 @@ export default function Navbar() {
                 <>
                   <NavLink
                     to="/login"
-                    className={({ isActive }) => `${linkBase} ${isActive ? active : inactive}`}
+                    className={({ isActive }) =>
+                      `${linkBase} ${isActive ? active : inactive}`
+                    }
                   >
                     Login
                   </NavLink>
+
                   <NavLink
                     to="/signup"
-                    className={({ isActive }) => `${linkBase} ${isActive ? active : inactive}`}
+                    className={({ isActive }) =>
+                      `${linkBase} ${isActive ? active : inactive}`
+                    }
                   >
                     Signup
                   </NavLink>
@@ -68,5 +75,5 @@ export default function Navbar() {
         </div>
       </div>
     </nav>
-  )
+  );
 }

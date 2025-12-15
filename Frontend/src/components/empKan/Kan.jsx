@@ -414,6 +414,12 @@ export default function Kan({name}) {
   });
   const [isAiLoading, setIsAiLoading] = useState(false);
 
+  const [developerRatings, setDeveloperRatings] = useState( () => {
+    const saved = localStorage.getItem("developer_ratings");
+    return saved ? JSON.parse(saved) : [];
+  })
+  const [isRatingLoading, setIsRatingLoading] = useState(false);
+
   useEffect(() => {
   saveTasks(tasks);
 }, [tasks]);
@@ -605,6 +611,8 @@ export default function Kan({name}) {
             </button>
           </div>
           
+          
+
           {/* Filters */}
           <div className="flex gap-4 items-center flex-wrap">
             <div className="relative">

@@ -10,13 +10,15 @@ import Landing from './components/Landing';
 import Kan from './components/empKan/Kan';
 
 export default function App() {
+
+   const hideNavbar = location.pathname === '/landing';
   return (
     <Router>
       <div className="min-h-screen">
-        <Navbar />
+        {!hideNavbar && <Navbar />}
         <Routes>
           {/* Default to login so new users hit the auth page first */}
-          <Route path="/" element={<Navigate to="/login" replace />} />
+          <Route path="/" element={<Landing />} />
           <Route path="/kanban" element={<Kanban name="Kanban" />} />
           <Route path="/profiles" element={<Profiles />} />
           <Route path="/login" element={<Login />} />
