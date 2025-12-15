@@ -1,26 +1,20 @@
-import React from 'react';
-import Cookies from 'js-cookie';
+import React from "react";
 
 export default function CreateProjectModal({ isOpen, onClose, onCreate }) {
   if (!isOpen) return null;
-
-  const token = Cookies.get('token');
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
     const formData = new FormData(e.target);
-    const name = formData.get('name');
+    const name = formData.get("name");
 
-    onCreate({
-      name,
-      token,
-    });
+    onCreate({ name });
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="w-full max-w-md bg-white rounded-lg shadow-lg p-6 border-4">
+      <div className="w-full max-w-md bg-white rounded-lg shadow-lg p-6">
         <h3 className="text-lg font-semibold text-gray-800 mb-4">
           Create New Project
         </h3>

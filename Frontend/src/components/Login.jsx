@@ -21,7 +21,7 @@ export default function Login() {
       if (response.ok) {
         Cookies.set('token', data.token, { expires: 7 })
         console.log('Login successful:', data)
-        navigate('/kanban') // Redirect to /kanban on success
+        navigate('/profile') // Redirect to /kanban on success
       } else {
         setError(data.message || 'Login failed')
       }
