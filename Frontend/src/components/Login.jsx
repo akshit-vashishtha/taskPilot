@@ -20,10 +20,7 @@ export default function Login() {
       const data = await response.json();
       if (response.ok) {
         Cookies.set("token", data.token, { expires: 7 });
-
-        // 🔴 THIS LINE FIXES THE NAVBAR
         window.dispatchEvent(new Event("authChanged"));
-
         console.log("Login successful:", data);
         navigate("/profile");
       } else {
