@@ -21,30 +21,46 @@ export default function Signup() {
 
   // Step 2: Handle form submission
   const handleSubmit = async (e) => {
-    e.preventDefault(); // prevent page refresh
-    console.log("Form Data:", formData);
+  e.preventDefault();
 
-    try {
-      // Step 3: Send data to backend
-      const response = await fetch("http://localhost:800/signup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const passwordRegex =
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 
-      if (!response.ok) {
-        throw new Error("Signup failed");
-      }
+  // Email validation
+  if (!emailRegex.test(formData.email)) {
+    alert("Please enter a valid email address");
+    return;
+  }
 
-      const data = await response.json();
-      console.log("Server response:", data);
-      alert("Signup successful!");
-      navigate("/login"); // redirect to login page
-    } catch (err) {
-      console.error(err);
-      alert("Something went wrong. Please try again.");
+  // Password validation
+  if (!passwordRegex.test(formData.password)) {
+    alert(
+      "Password must be at least 8 characters long and include:\n• 1 uppercase letter\n• 1 lowercase letter\n• 1 number\n• 1 special character"
+    );
+    return;
+  }
+
+  try {
+    const response = await fetch("http://localhost:800/signup", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(formData),
+    });
+
+    if (!response.ok) {
+      throw new Error("Signup failed");
     }
-  };
+
+    const data = await response.json();
+    alert("Signup successful!");
+    navigate("/login");
+  } catch (err) {
+    console.error(err);
+    alert("Something went wrong. Please try again.");
+  }
+};
+
 
   return (
     <div className="h-screen w-screen flex justify-center items-center bg-gradient-to-br from-blue-50 to-indigo-100">
