@@ -62,7 +62,7 @@ export default function Profile() {
     }
   };
 
-  const handleCreateProject = async ({ name }) => {
+  const handleCreateProject = async ({ name, description }) => {
     try {
       const token = Cookies.get("token");
 
@@ -73,7 +73,8 @@ export default function Profile() {
         },
         body: JSON.stringify({
           name,
-          token, // ✅ send token in body
+          description,
+          token,
         }),
       });
 
@@ -99,7 +100,7 @@ export default function Profile() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-40 text-gray-500">
+      <div className="flex items-center justify-center min-h-screen text-gray-500">
         Loading projects...
       </div>
     );
@@ -107,74 +108,98 @@ export default function Profile() {
 
   return (
     <>
-      {/* Main Content */}
-      <div className={`max-w-3xl mx-auto p-6 ${showModal ? "blur-xl" : ""}`}>
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-semibold text-gray-800">
-            Your Projects
-          </h2>
+      <div className={`min-h-screen bg-gray-50 ${showModal ? "blur-sm" : ""}`}>
+        <div className="max-w-4xl mx-auto px-6 py-10">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h2 className="text-3xl font-semibold text-gray-900">
+                Your Projects
+              </h2>
+              <p className="text-sm text-gray-500 mt-1">
+                Manage and access all your workspaces
+              </p>
+            </div>
 
-          <button
-            onClick={() => setShowModal(true)}
-            className="px-4 py-2 rounded-md bg-blue-600 text-white text-sm font-medium hover:bg-blue-700"
-          >
-            Create Project
-          </button>
-        </div>
-
-        {projects.length === 0 ? (
-          <div className="">
+            <button
+              onClick={() => setShowModal(true)}
+              className="px-5 py-2.5 rounded-lg bg-blue-600 text-white text-sm font-medium shadow hover:bg-blue-700 transition"
+            >
+              Create Project
+            </button>
           </div>
-        ) : (
-          <ul className="space-y-4">
-  {projects.map((project) => (
-    <li
-      key={project.id}
-      onClick={() => navigate("/demo")}
-      className="flex items-center justify-between p-4 border rounded-lg bg-white shadow-sm cursor-pointer hover:bg-gray-50"
-    >
-      <div>
-        <p className="text-lg font-medium text-gray-900">
-          {project.name}
-        </p>
-        {project.description && (
-          <p className="text-sm text-gray-600 mt-1">
-            {project.description}
-          </p>
-        )}
+
+          {/* Projects */}
+          {projects.length === 0 ? (
+            <div className="bg-white rounded-xl p-10 text-center text-gray-500 shadow-sm">
+              No projects yet. Create one to get started.
+            </div>
+          ) : (
+            <ul className="space-y-5">
+              {projects.map((project) => (
+                <li
+                  key={project.id}
+                  onClick={() => navigate("/demo")}
+                  className="group flex items-center justify-between p-5 border rounded-xl bg-white shadow-sm hover:shadow-md transition cursor-pointer"
+                >
+                  <div className="flex-1">
+                    <p className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition">
+                      {project.name}
+                    </p>
+
+                    {project.description ? (
+                      <p className="text-sm text-gray-600 mt-1 leading-relaxed">
+                        {project.description}
+                      </p>
+                    ) : (
+                      <p className="text-sm text-gray-400 italic mt-1">
+                        No description
+                      </p>
+                    )}
+                  </div>
+
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteProject(project.id);
+                    }}
+                    className="ml-4 p-2 rounded-lg text-gray-400 hover:bg-red-50 hover:text-red-600 transition"
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                </li>
+              ))}
+            </ul>
+           )
+          }
+
+          {/* Sample Project */}
+          <div className="mt-5">
+
+            <li
+              onClick={() => navigate("/kanban")}
+              className="flex items-center justify-between p-5 border rounded-xl bg-white shadow-sm hover:shadow-md transition cursor-pointer"
+            >
+              <div>
+                <p className="text-lg font-semibold text-gray-900">
+                  Sample Project
+                </p>
+                <p className="text-sm text-gray-600 mt-1">
+                  This is a sample project for demonstration purposes.
+                </p>
+              </div>
+
+              <button
+                onClick={(e) => e.stopPropagation()}
+                className="p-2 rounded-lg text-gray-400 hover:bg-red-50 hover:text-red-600 transition"
+              >
+                <Trash2 size={18} />
+              </button>
+            </li>
+          </div>
+        </div>
       </div>
 
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          handleDeleteProject(project.id);
-        }}
-        className="p-2 rounded hover:bg-red-50 text-gray-400 hover:text-red-600 transition"
-      >
-        <Trash2 size={18} />
-      </button>
-    </li>
-  ))}
-</ul>
-
-        )}
-      </div>
-      <div className="w-180 mx-auto">
-        <li
-          onClick={() => navigate("/kanban")}
-          className="flex items-center justify-between p-4 border rounded-lg bg-white shadow-sm cursor-pointer hover:bg-gray-50 w-full"
-        >
-          <p className="text-lg font-medium text-gray-900">Sample Project</p>
-
-          <button
-            onClick={(e) => e.stopPropagation()}
-            className="p-2 rounded hover:bg-red-50 text-gray-400 hover:text-red-600 transition"
-          >
-            <Trash2 size={18} />
-          </button>
-        </li>
-      </div>
-      {/* Modal */}
       <CreateProjectModal
         isOpen={showModal}
         onClose={() => setShowModal(false)}

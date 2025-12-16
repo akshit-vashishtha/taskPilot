@@ -8,6 +8,12 @@ const ProjectSchema = new mongoose.Schema(
       trim: true,
     },
 
+    description: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+
     masterUser: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',

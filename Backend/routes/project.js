@@ -6,40 +6,33 @@ const User = require('../models/user');
 
 router.post('/', async (req, res) => {
   try {
-    const { name, token } = req.body;
+    const { name, description, token } = req.body;
 
-    console.log('Create project request:', { name });
+    console.log('Create project request:', { name, description });
 
     if (!name) {
-      console.log('Project creation failed: name missing');
       return res.status(400).json({ message: 'Project name is required' });
     }
 
     if (!token) {
-      console.log('Project creation failed: token missing');
       return res.status(401).json({ message: 'Token missing' });
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const userId = decoded.userId;
 
-    console.log('Authenticated user:', userId);
-
     const project = await Project.create({
       name,
+      description: description?.trim() || '',
       masterUser: userId,
       users: [userId],
       tasks: [],
     });
 
-    console.log('Project created:', project._id);
-
     await User.findByIdAndUpdate(
       userId,
       { $addToSet: { projects: project._id } }
     );
-
-    console.log('Project added to user:', userId);
 
     res.status(201).json(project);
   } catch (err) {
@@ -47,6 +40,7 @@ router.post('/', async (req, res) => {
     res.status(400).json({ message: err.message });
   }
 });
+
 
 
 /**
@@ -71,9 +65,10 @@ router.get('/my', async (req, res) => {
       _id: { $in: user.projects },
     });
 
-    const response = projects.map(project => ({
+    const response = projects.map((project) => ({
       _id: project._id,
       name: project.name,
+      description: project.description || '',
       role:
         project.masterUser.toString() === userId
           ? 'Master'
@@ -86,6 +81,7 @@ router.get('/my', async (req, res) => {
     res.status(400).json({ message: err.message });
   }
 });
+
 
 
 

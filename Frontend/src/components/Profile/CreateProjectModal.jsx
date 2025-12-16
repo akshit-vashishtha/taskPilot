@@ -8,8 +8,9 @@ export default function CreateProjectModal({ isOpen, onClose, onCreate }) {
 
     const formData = new FormData(e.target);
     const name = formData.get("name");
+    const description = formData.get("description");
 
-    onCreate({ name });
+    onCreate({ name, description });
   };
 
   return (
@@ -30,6 +31,18 @@ export default function CreateProjectModal({ isOpen, onClose, onCreate }) {
               required
               placeholder="Enter project name"
               className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm text-gray-600 mb-1">
+              Description
+            </label>
+            <textarea
+              name="description"
+              rows={3}
+              placeholder="Describe your project"
+              className="w-full px-3 py-2 border rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
