@@ -131,8 +131,8 @@ export default function Profile() {
 
           {/* Projects */}
           {projects.length === 0 ? (
-            <div className="bg-white rounded-xl p-10 text-center text-gray-500 shadow-sm">
-              No projects yet. Create one to get started.
+            <div className="">
+        
             </div>
           ) : (
             <ul className="space-y-5">

@@ -32,7 +32,7 @@ export default function Login() {
   };
 
   return (
-    <div className="h-screen w-screen flex justify-center items-center bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="h-screen w-auto flex justify-center items-center bg-gradient-to-br from-blue-50 to-indigo-100">
       <div className="form h-auto w-full max-w-md bg-white rounded-2xl shadow-2xl p-8 mx-4">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-800 mb-2">

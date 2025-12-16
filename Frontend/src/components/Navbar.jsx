@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { NavLink, Link, useNavigate } from 'react-router-dom';
 import Cookies from 'js-cookie';
+import { useLocation } from "react-router-dom";
 
 const linkBase = 'px-4 py-2 rounded-md text-sm font-medium';
 const active = 'bg-blue-600 text-white';
@@ -15,6 +16,11 @@ export default function Navbar() {
     window.addEventListener('authChanged', onAuth);
     return () => window.removeEventListener('authChanged', onAuth);
   }, []);
+  const location = useLocation();
+
+  if (location.pathname === "/") {
+    return null;
+  }
 
   return (
     <nav className="bg-white border-b border-gray-200">

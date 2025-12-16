@@ -89,7 +89,8 @@ export default function Landing() {
   ];
 
   return (
-    <div className="fixed inset-0 z-50 min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white overflow-hidden">
+    <div className="relative min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white overflow-x-hidden">
+
 
       {/* Animated background */}
       <div className="absolute inset-0 overflow-hidden">
