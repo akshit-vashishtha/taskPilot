@@ -75,7 +75,7 @@ export default function Landing() {
     { name: "React.js", category: "Frontend" },
     { name: "Node.js", category: "Backend" },
     { name: "MongoDB", category: "Database" },
-    { name: "Langchain", category: "AI/ML" },
+    { name: "OpenAI", category: "AI/ML" },
     { name: "Express.js", category: "Backend" },
     { name: "JWT", category: "Auth" },
   ];
